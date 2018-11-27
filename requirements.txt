@@ -31,7 +31,7 @@ django-pwned-passwords==2.0.1
 django-redis==4.10.0
 django-referrer-policy==1.0
 django-storages==1.7.1
-django-tables2==1.21.1
+django-tables2==2.0.3
 django-tinymce4-lite==1.7.3
 django_select2==6.3.1
 djangorestframework==3.9.0
