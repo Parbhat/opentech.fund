@@ -62,6 +62,11 @@ class SubmissionsTable(tables.Table):
         qs = qs.order_by(update_order, 'submit_time')
         return qs, True
 
+    def get_column_class_names(self, classes_set, bound_column):
+        classes_set = super(SubmissionsTable, self).get_column_class_names(classes_set, bound_column)
+        classes_set.add(bound_column.name)
+        return classes_set
+
 
 class AdminSubmissionsTable(SubmissionsTable):
     """Adds admin only columns to the submissions table"""
