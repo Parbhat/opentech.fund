@@ -21,3 +21,16 @@ RECOMMENDATION_CHOICES = (
     (MAYBE, 'Maybe'),
     (YES, 'Yes'),
 )
+
+PRIVATE = 'private'
+REVIEWER = 'reviewers'
+
+VISIBILILTY_HELP_TEXT = {
+    PRIVATE: 'Visible to applicant and staff.',
+    REVIEWER: 'Visible to reviewers and staff.',
+}
+
+VISIBILITY = {
+    PRIVATE: 'Private',
+    REVIEWER: 'Reviewers and Staff',
+}

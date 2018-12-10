@@ -10,7 +10,7 @@ from wagtail.admin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.core.fields import StreamField
 
 from opentech.apply.funds.models.mixins import AccessFormData
-from opentech.apply.review.options import YES, NO, MAYBE, RECOMMENDATION_CHOICES
+from opentech.apply.review.options import YES, NO, MAYBE, RECOMMENDATION_CHOICES, VISIBILITY, PRIVATE, REVIEWER
 from opentech.apply.stream_forms.models import BaseStreamForm
 from opentech.apply.users.models import User
 
@@ -19,6 +19,7 @@ from .blocks import (
     RecommendationBlock,
     RecommendationCommentsBlock,
     ScoreFieldBlock,
+    VisibilityBlock,
 )
 from .options import NA
 
@@ -36,6 +37,10 @@ class ReviewFormFieldsMixin(models.Model):
     @property
     def recommendation_field(self):
         return self._get_field_type(RecommendationBlock)
+
+    @property
+    def visibility_field(self):
+        return self._get_field_type(VisibilityBlock)
 
     @property
     def comment_field(self):
@@ -106,6 +111,9 @@ class ReviewQuerySet(models.QuerySet):
         else:
             return MAYBE
 
+    def visible_to(self, user):
+        return self.filter(visibility__in=self.model.visibility_for(user))
+
 
 class Review(ReviewFormFieldsMixin, BaseStreamForm, AccessFormData, models.Model):
     submission = models.ForeignKey('funds.ApplicationSubmission', on_delete=models.CASCADE, related_name='reviews')
@@ -122,6 +130,7 @@ class Review(ReviewFormFieldsMixin, BaseStreamForm, AccessFormData, models.Model
     is_draft = models.BooleanField(default=False, verbose_name=_("Draft"))
     created_at = models.DateTimeField(verbose_name=_("Creation time"), auto_now_add=True)
     updated_at = models.DateTimeField(verbose_name=_("Update time"), auto_now=True)
+    visibility = models.CharField(verbose_name=_("Visibility"), choices=VISIBILITY.items(), default=PRIVATE, max_length=10)
 
     # Meta: used for migration purposes only
     drupal_id = models.IntegerField(null=True, blank=True, editable=False)
@@ -156,6 +165,14 @@ class Review(ReviewFormFieldsMixin, BaseStreamForm, AccessFormData, models.Model
 
     def get_compare_url(self):
         return self.revision.get_compare_url_to_latest()
+
+    @classmethod
+    def visibility_for(cls, user):
+        if user.is_apply_staff:
+            return [PRIVATE, REVIEWER]
+        if user.is_reviewer:
+            return [REVIEWER]
+        return [PRIVATE]
 
 
 @receiver(post_save, sender=Review)
